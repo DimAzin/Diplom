@@ -1,0 +1,178 @@
+<!-- mainapp/templates/mainapp/associate_words.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Ассоциации слов с цветами</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            width: 100px; /* Задаем фиксированную ширину для колонок */
+            vertical-align: top; /* Выравнивание по верхнему краю */
+        }
+        th {
+            height: 50px;
+        }
+        .concept-list {
+            margin-bottom: 20px;
+        }
+        .concept {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+        .interpretation {
+            display: none; /* Скрываем интерпретацию по умолчанию */
+        }
+        .back-button {
+            margin: 20px 0; /* Отступ сверху и снизу */
+            padding: 10px 15px;
+            background-color: #007bff; /* Цвет фона кнопки */
+            color: white; /* Цвет текста */
+            border: none; /* Убираем рамку */
+            border-radius: 5px; /* Скругляем углы */
+            cursor: pointer; /* Указатель при наведении */
+            font-size: 16px; /* Размер шрифта */
+        }
+        .back-button:hover {
+            background-color: #0056b3; /* Цвет фона при наведении */
+        }
+    </style>
+    <script>
+        let droppedConcepts = {}; // Объект для отслеживания уже перетаскиваемых понятий в столбцах
+        const totalConcepts = {{ concepts|length }}; // Общее количество понятий
+        let placedConceptsCount = 0; // Счетчик размещенных понятий
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.innerHTML);
+            event.dataTransfer.setData("id", event.target.id); // Получаем id перетаскиваемого элемента
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const concept = event.dataTransfer.getData("text");
+            const id = event.dataTransfer.getData("id");
+            const column = event.target;
+
+            // Проверяем, является ли целевой элемент ячейкой таблицы или заголовком
+            if (column.tagName !== "TD" && column.tagName !== "TH") {
+                return; // Игнорируем, если перетаскивание произошло не в ячейку или заголовок
+            }
+
+            // Получаем индекс колонки
+            const columnIndex = column.cellIndex;
+
+            // Проверяем, существует ли уже массив для данного столбца
+            if (!droppedConcepts[columnIndex]) {
+                droppedConcepts[columnIndex] = [];
+            }
+
+            // Добавляем понятие в массив
+            droppedConcepts[columnIndex].push(concept);
+            placedConceptsCount++; // Увеличиваем счетчик размещенных понятий
+
+            // Создаем новый элемент для добавления
+            const newConceptDiv = document.createElement('div');
+            newConceptDiv.textContent = concept;
+            newConceptDiv.style.padding = '5px'; // Устанавливаем внутренний отступ
+
+            // Находим первую пустую ячейку в столбце или добавляем в следующую ячейку
+            const cellsInColumn = document.querySelectorAll(`td:nth-child(${columnIndex + 1})`);
+            let emptyCell = null;
+
+            for (let cell of cellsInColumn) {
+                if (cell.childElementCount === 0) { // Проверяем, пустая ли ячейка
+                    emptyCell = cell;
+                    break;
+                }
+            }
+
+            // Если нашли пустую ячейку, добавляем туда
+            if (emptyCell) {
+                emptyCell.appendChild(newConceptDiv);
+            } else {
+                // Если нет пустых ячеек, добавляем в последнюю ячейку
+                cellsInColumn[cellsInColumn.length - 1].appendChild(newConceptDiv);
+            }
+
+            // Скрываем элемент из списка
+            document.getElementById(id).classList.add('hidden');
+
+            // Проверяем, размещены ли все понятия
+            if (placedConceptsCount === totalConcepts) {
+                showInterpretation();
+            }
+        }
+
+        function showInterpretation() {
+            // Показываем интерпретацию
+            const interpretationContainer = document.querySelector('.interpretation');
+            interpretationContainer.innerHTML = `
+                <tr>
+                    <th colspan="2">Ваш ресурс</th>
+                    <th colspan="2">Ваше текущее состояние</th>
+                    <th colspan="2">Ваш невостребованный ресурс</th>
+                    <th colspan="2">То, что вы отвергаете</th>
+                </tr>
+            `;
+            interpretationContainer.style.display = 'table-row'; // Показываем строку с интерпретацией
+        }
+
+        function goToMainMenu() {
+            window.location.href = '/';
+        }
+    </script>
+</head>
+<body>
+    <h1>Понятия для ассоциаций (перетащите понятие в ту колонку, с цветом которой оно у вас ассоциируется): </h1>
+
+    <button class="back-button" onclick="goToMainMenu()">Вернуться в главное меню</button>
+
+    <div class="concept-list">
+        {% for concept in concepts %}
+            <div class="concept" id="concept-{{ forloop.counter }}" draggable="true" ondragstart="drag(event)">
+                {{ concept }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                {% for color in selected_colors %}
+                    <th ondrop="drop(event)" ondragover="allowDrop(event)" style="background-color: {{ color }};">
+                        {{ forloop.counter }}
+                    </th>
+                {% endfor %}
+            </tr>
+            <tr class="interpretation">
+                <!-- Интерпретация столбцов будет добавлена динамически -->
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for color in selected_colors %}
+                    <td ondrop="drop(event)" ondragover="allowDrop(event)"></td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
+

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h2>Распределите понятия по колонкам</h2>
+<p>Понятие: <span id="current-word"></span></p>
+<div id="columns">
+    <!-- Для каждой колонки по цвету создаем элемент div: -->
+    <div class="column" data-color="1">Синий</div>
+    <div class="column" data-color="2">Зеленый</div>
+    <!-- и так далее для всех 8 цветов -->
+</div>
+<button onclick="submitWord()">Следующее</button>
+
+<script>
+    const words = ["Семейная жизнь", "Настоящий/-ая Я", "Будущее", ...];  // Ваш список понятий
+    let currentIndex = 0;
+
+    function submitWord() {
+        const currentWord = words[currentIndex];
+        const selectedColor = /* Здесь получаем цвет, выбранный для слова */;
+        // Отправляем понятие и выбранный цвет на сервер
+        fetch("{% url 'associate_words' %}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ word: currentWord, color: selectedColor })
+        }).then(response => response.json()).then(data => {
+            currentIndex++;
+            if (currentIndex < words.length) {
+                document.getElementById('current-word').innerText = words[currentIndex];
+            } else {
+                window.location.href = data.redirect_url;  // Переход на интерпретацию
+            }
+        });
+    }
+</script>
+</body>
+</html>

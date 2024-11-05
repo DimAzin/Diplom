@@ -1,0 +1,19 @@
+<!-- mainapp/templates/mainapp/home.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Описание</title>
+</head>
+<body>
+    <h1>Добро пожаловать в наше психологическое приложение</h1>
+    <p>Здесь вы найдете различные тесты и информацию о психологии.</p>
+    <nav>
+        <ul>
+
+            <li><a href="{% url 'psychologist_selection' %}">Психолог</a></li>
+            <li><a href="{% url 'tests' %}">Тесты</a></li>
+        </ul>
+    </nav>
+</body>
+</html>

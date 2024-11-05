@@ -1,0 +1,67 @@
+<!-- psychologist.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Чат с психологом</title>
+    {% csrf_token %}
+</head>
+<body>
+    <h1>Вы общаетесь с {{ psychologist }}</h1>
+    <div id="chat" style="border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll;"></div>
+
+    <input type="text" id="message" placeholder="Ваше сообщение..." style="width: 80%;">
+    <button onclick="sendMessage()">Отправить</button>
+    <button onclick="window.location.href='/'">Назад на главную</button>
+
+    <script>
+        function sendMessage() {
+            const message = document.getElementById('message').value.trim();
+            const psychologist = '{{ psychologist }}'; // Получаем выбранного психолога
+
+            if (!message) {
+                alert('Пожалуйста, введите сообщение.');
+                return; // Прекращаем выполнение, если сообщение пустое
+            }
+
+            fetch('/psychologist/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ message: message, psychologist: psychologist })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const chatDiv = document.getElementById('chat');
+                chatDiv.innerHTML += `<p><strong>Вы:</strong> ${message}</p>`;
+                chatDiv.innerHTML += `<p><strong>${psychologist}:</strong> ${data.message}</p>`;
+                document.getElementById('message').value = ''; // Очистка поля ввода
+                chatDiv.scrollTop = chatDiv.scrollHeight; // Прокрутка вниз к последнему сообщению
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>
+
+
+

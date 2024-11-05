@@ -1,0 +1,121 @@
+<!-- mainapp/templates/mainapp/color_test.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Цветовой тест</title>
+    <style>
+        .color-cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .color-card-wrapper {
+            width: 3cm;
+            margin: 5px;
+            text-align: center;
+        }
+        .color-card {
+            width: 3cm;
+            height: 3cm;
+        }
+        .card-number {
+            margin-top: 5px;
+        }
+        .input-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .input-row input {
+            width: 3cm;
+            margin: 5px;
+            text-align: center;
+        }
+        #submit-btn {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Цветовой тест</h1>
+    <h2>Состаьте карточки цветов по степени от наиболее привлекательного до наименее </h2>
+    <p>Номера выбираемых карточек введите в соответствующих полях по порядку привлеательности ниже</p>
+
+    <form method="post" id="color-form">
+        {% csrf_token %}
+        <div class="color-cards-container">
+            <!-- Первый ряд карточек -->
+            <div class="color-card-wrapper">
+                <div class="color-card" style="background-color: blue;"></div>
+                <div class="card-number">1</div>
+            </div>
+            <div class="color-card-wrapper">
+                <div class="color-card" style="background-color: green;"></div>
+                <div class="card-number">2</div>
+            </div>
+            <div class="color-card-wrapper">
+                <div class="color-card" style="background-color: red;"></div>
+                <div class="card-number">3</div>
+            </div>
+            <div class="color-card-wrapper">
+                <div class="color-card" style="background-color: yellow;"></div>
+                <div class="card-number">4</div>
+            </div>
+        </div>
+        <div class="color-cards-container">
+            <!-- Второй ряд карточек -->
+            <div class="color-card-wrapper">
+                <div class="color-card" style="background-color: purple;"></div>
+                <div class="card-number">5</div>
+            </div>
+            <div class="color-card-wrapper">
+                <div class="color-card" style="background-color: brown;"></div>
+                <div class="card-number">6</div>
+            </div>
+            <div class="color-card-wrapper">
+                <div class="color-card" style="background-color: black;"></div>
+                <div class="card-number">7</div>
+            </div>
+            <div class="color-card-wrapper">
+                <div class="color-card" style="background-color: gray;"></div>
+                <div class="card-number">8</div>
+            </div>
+        </div>
+
+        <div class="input-row">
+            <!-- Восемь полей для ввода номеров цветов -->
+            {% for i in "12345678" %}
+                <input type="number" class="color-input" name="colors" min="1" max="8" placeholder="{{ forloop.counter }}">
+            {% endfor %}
+        </div>
+
+        <button type="submit" id="submit-btn">Далее</button>
+    </form>
+
+    <script>
+        document.getElementById('color-form').onsubmit = function() {
+            const inputs = document.querySelectorAll('.color-input');
+            const values = [];
+            let isValid = true;
+
+            inputs.forEach(input => {
+                const value = parseInt(input.value);
+                if (isNaN(value) || value < 1 || value > 8 || values.includes(value)) {
+                    isValid = false;
+                    alert('Пожалуйста, введите уникальные номера от 1 до 8.');
+                    return;
+                }
+                values.push(value);
+            });
+
+            // Если данные валидны, форма будет отправлена, иначе действие отменяется
+            return isValid && values.length === 8;
+        };
+    </script>
+</body>
+</html>
+
